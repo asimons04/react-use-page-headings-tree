@@ -178,7 +178,6 @@ Here, we're giving the container element an id and passing that string to the `T
 import TableOfContents from '@/components/table-of-contents'
 
 export default function Page() {
-    const content=useRef<HTMLDivElement>(null)
     return (
         <div>
             <h1>XYZ Company</h1>
