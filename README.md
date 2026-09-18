@@ -84,7 +84,7 @@ export default function TableOfContents(props: TableOfContentsProps) {
     const [headingTree, setHeadingTree] = useState<NodeTree[]|null>(null)
     
     useEffect(() => {
-        // Get a reference to the container to query for theadings
+        // Get a reference to the container to query for the headings
         const container = props.container?.current 
             ? props.container.current
             : props.id
