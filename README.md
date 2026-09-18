@@ -143,7 +143,7 @@ import TableOfContents from '@/components/table-of-contents'
 import { useRef } from "react"
 
 export default function Page() {
-    const content=useRef<HTMLDivElement>(null)
+    const content = useRef<HTMLDivElement>(null)
     return (
         <div>
             <h1>XYZ Company</h1>
