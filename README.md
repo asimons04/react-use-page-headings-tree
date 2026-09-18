@@ -90,7 +90,7 @@ export default function TableOfContents(props: TableOfContentsProps) {
             <h2 id="TableOfContents">Table of Contents</h2>
             <ol className="list-decimal ml-6 font-medium">
                 {headingTree?.map((i:NodeTree) => 
-                    <TableOfContentsItem {...i} key={i.title}/>  
+                    <TableOfContentsItem {...i} key={i.id}/>  
                 )}
             </ol>
             
@@ -111,7 +111,7 @@ function TableOfContentsItem(props:NodeTree) {
             </a>
             {props.children && (
                 <ol className="list-[lower-roman] ml-6">
-                    {props.children?.map((i:NodeTree) => <TableOfContentsItem {...i} key={i.title} />)}
+                    {props.children?.map((i:NodeTree) => <TableOfContentsItem {...i} key={i.id} />)}
                 </ol>
             )}
         </li>
