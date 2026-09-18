@@ -69,7 +69,12 @@ import { NodeTree, usePageHeadingsTree } from "@/lib/use-page-headings-tree"
 import { RefObject, useEffect, useState } from "react"
 
 interface TableOfContentsProps {
-    container: RefObject<T>
+    // Pass an ID if you are calling from a SSR'd component/page
+    id?: string
+    
+    // Pass a RefObject if the parent component is client-side rendered.
+    // Adjust type if you need a different container element
+    container?: RefObject<HTMLDivElement|null>    
 }
 
 export default function TableOfContents(props: TableOfContentsProps) {
@@ -79,7 +84,17 @@ export default function TableOfContents(props: TableOfContentsProps) {
     const [headingTree, setHeadingTree] = useState<NodeTree[]|null>(null)
     
     useEffect(() => {
-        const nodes = props.container.current?.querySelectorAll<HTMLHeadingElement>("h2,h3,h4,h5,h6") ?? []
+        // Get a reference to the container to query for theadings
+        const container = props.container?.current 
+            ? props.container.current
+            : props.id
+                ? document.getElementById(props.id)
+                : undefined
+        
+        // Query the container for heading nodes
+        const nodes = container?.querySelectorAll<HTMLHeadingElement>("h2,h3,h4,h5,h6") ?? []
+
+        // Save the discovered heading elements to the state variable
         setHeadingNodes(nodes)
     },[props.container])
     
@@ -119,18 +134,21 @@ function TableOfContentsItem(props:NodeTree) {
 }
 ```
 
-#### `page.tsx`
+#### `page.tsx` (Client-side render)
+This example uses client-side rendering and passes a reference to the container element.  Since `useRef` requires the component to be rendered on the client, the page itself is client-side rendered as well as the ToC.
+
 ```typescript
+'use client'
 import TableOfContents from '@/components/table-of-contents'
 import { useRef } from "react"
 
 export default function Page() {
-    
+    const content=useRef<HTMLDivElement>(null)
     return (
         <div>
-            <TableOfContents container={content} />
-
             <h1>XYZ Company</h1>
+
+            <TableOfContents container={content} />
 
             <section ref={content}>
                 <h2 id="welcome">Welcome</h2>
@@ -151,9 +169,46 @@ export default function Page() {
         </div>
     )
 }
-
-
 ```
+
+#### `page.tsx` (Server-side render)
+Here, we're giving the container element an id and passing that string to the `TableOfContents` component.  This allows the page to be rendered server-side with only the `TableOfContents` component rendering client-side.
+
+```typescript
+import TableOfContents from '@/components/table-of-contents'
+
+export default function Page() {
+    const content=useRef<HTMLDivElement>(null)
+    return (
+        <div>
+            <h1>XYZ Company</h1>
+
+            <TableOfContents id="content" />
+
+            <section id="content">
+                <h2 id="welcome">Welcome</h2>
+                <p>Welcome to our website!</p>
+
+                <h2 id="about-us">About Us</h2>
+                <p>Let us tell you about ourselves.</p>
+
+                <h3 id="history">Our History</h3>
+                <p>We were founded years ago...</p>
+
+                <h3 id="vision">Our Vision</h3>
+                <p>We see our company...</p>
+
+                <h2 id="services">Our Service</h2>
+                <p>We offer a lot of services for you.</p>
+            </section>
+        </div>
+    )
+}
+```
+#### Output
+![Table of Contents generated automatically from the heading elements on the page](./screenshots/toc.png)
+
+
 
 ## Notes
 
@@ -164,7 +219,7 @@ This also includes lower level headings, even if they have `id` values, if the p
 
 The tree will still generate, but whatever level lacks an `id` will not be included, including its children.
 
-### Skipping a heaidng level will throw an error
+### Skipping a heading level will throw an error
 The original project does handle this as a deliberate error, and I could have patched it to proceed anyway, but chose not to.  Consider this an accessibility checker and warning system.
 
 If you skip a heading level, such as going from `<h2>` to `<h4>` with no `<h3>` in between, it will throw an error.  If this happens, check to make sure your headings are all in order.
